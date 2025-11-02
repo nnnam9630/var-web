@@ -1,0 +1,14 @@
+/* Premier League VN WebFont */
+@font-face {
+  font-family: 'Premier League VN';
+  src: url('FVH PremierLeagueW01-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Premier League VN';
+  src: url('FVH PremierLeagueW01-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
