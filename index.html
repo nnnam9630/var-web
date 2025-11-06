@@ -11,62 +11,99 @@
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     
     <!-- Tải TensorFlow.js và các model AI -->
-    <!-- 1. Core TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <!-- 2. Model phát hiện vật thể (trái bóng) -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@latest/dist/coco-ssd.min.js"></script>
-    <!-- 3. Model phát hiện khuôn mặt -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@latest/dist/blazeface.min.js"></script>
-    <link rel="stylesheet" href="premier-league-vn.css">
 
-
+    <!-- Tải Font Be Vietnam Pro -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    
+    <!-- Tải Material Icons Round -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons+Round" rel="stylesheet">
+    
     <style>
+        /* Nền chính */
+        html {
+            background-image: url('https://images.ctfassets.net/seegk6e7ypwi/60TvXEVrvciW5CvsnqQmYZ/599e887296658b7297caa4400b27196a/fc-26-community-background-image.webp');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
         body {
-            font-family: 'Premier League VN', sans-serif;
+            font-family: "Be Vietnam Pro", sans-serif;
             overflow: hidden;
-        }
-        /* CSS tùy chỉnh cho canvas */
-        #reviewCanvas {
-            cursor: crosshair;
-            touch-action: none;
-        }
-        .decision-btn.active {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-        }
-        .layout-btn.active {
-            opacity: 1;
-            background-color: #2563eb; /* bg-blue-600 */
-        }
-        .layout-btn:not(.active) {
-            opacity: 0.7;
-            background-color: #4b5563; /* bg-gray-600 */
-        }
-        /* Ẩn dropdown menu (cho nút 3 chấm) */
-        .camera-menu {
-            display: none;
-        }
-        /* Hiển thị dropdown khi hover hoặc focus-within group */
-        .group:hover .camera-menu,
-        .group:focus-within .camera-menu {
-            display: block;
+            background: transparent;
+            color: white;
         }
         
-        /* Đảm bảo video trong góc máy quay là 16:9 */
-        .camera-angle-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* SỬ DỤNG COVER */
+        /* Panel nền đen 50% */
+        .glass-panel {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
+
+        /* Nút nền đen 50% */
+        .glass-button {
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease-in-out;
+            color: white; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        .glass-button:hover {
+            background-color: rgba(20, 20, 20, 0.7); 
+        }
+        .glass-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .glass-button.danger { background-color: rgba(220, 38, 38, 0.5); }
+        .glass-button.danger:hover { background-color: rgba(220, 38, 38, 0.7); }
+        .glass-button.success { background-color: rgba(22, 163, 74, 0.5); }
+        .glass-button.success:hover { background-color: rgba(22, 163, 74, 0.7); }
+        .glass-button.warning { background-color: rgba(234, 179, 8, 0.5); }
+        .glass-button.warning:hover { background-color: rgba(234, 179, 8, 0.7); }
+        .glass-button.info { background-color: rgba(59, 130, 246, 0.5); }
+        .glass-button.info:hover { background-color: rgba(59, 130, 246, 0.7); }
+        .glass-button.purple { background-color: rgba(139, 92, 246, 0.5); }
+        .glass-button.purple:hover { background-color: rgba(139, 92, 246, 0.7); }
+        .glass-button.active {
+            background-color: rgba(59, 130, 246, 0.7); /* Blue */
+            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Scrollbar tùy chỉnh */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.5); }
+
+        /* CSS tùy chỉnh cho canvas */
+        #reviewCanvas { cursor: crosshair; touch-action: none; }
+        .decision-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            border-width: 2px;
+        }
+        
+        /* Ẩn dropdown menu (cho nút 3 chấm) */
+        .camera-menu { display: none; }
+        .group:hover .camera-menu,
+        .group:focus-within .camera-menu { display: block; }
+        
         /* Wrapper cho thumbnail 16:9 */
         .camera-angle-wrapper {
             aspect-ratio: 16 / 9;
-            background-color: #000; /* Nền đen cho tỷ lệ */
+            background-color: #000;
         }
-        
-        /* SỬA LỖI: Cập nhật CSS cho Màn hình chính (img và video) */
-        #mainVideoFeedImage, #mainVideoFeedVideo {
-             object-fit: cover; /* SỬ DỤNG COVER (thay vì contain) */
+        .camera-angle-video, .camera-angle-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         /* Canvas cho AI detection */
@@ -76,147 +113,246 @@
             left: 0;
             pointer-events: none; /* Cho phép click xuyên qua */
         }
+        
+        /* Style cho FONT ICON */
+        .btn-icon {
+            font-size: 1.25rem; /* 20px */
+            line-height: 1;
+            flex-shrink: 0;
+            aspect-ratio: 1 / 1;
+        }
+        .btn-icon-sm {
+            font-size: 1rem; /* 16px */
+            line-height: 1;
+            flex-shrink: 0;
+            aspect-ratio: 1 / 1;
+        }
+        .menu-icon {
+            font-size: 1.25rem; /* 20px */
+            margin-right: 0.5rem; /* mr-2 */
+        }
+        
+        /* Đảm bảo text input trong modal có màu trắng */
+        input::placeholder { color: #9ca3af; /* gray-400 */ }
+        input { color: white; }
+        select { color: white; background-image: none; }
+        select option { color: black; background: white; }
+        
+        /* Hiệu ứng đàn hồi cho Modal */
+        .modal {
+            transition: opacity 300ms ease-out, transform 300ms cubic-bezier(0.18, 0.89, 0.32, 1.28); /* ease-out-back */
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            display: flex; 
+        }
+        .modal.open {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto; 
+        }
+        .modal:not(.open) {
+             visibility: hidden;
+        }
+        
+        /* Menu popup (cho Bảng điều khiển) */
+        .popup-menu {
+            transition: opacity 200ms ease-out, transform 200ms ease-out;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            visibility: hidden;
+            z-index: 100; 
+        }
+        .popup-menu.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            visibility: visible;
+        }
+        
+        /* Tooltip (Chú thích) */
+        .tooltip {
+            position: relative;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: max-content;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.25rem 0.5rem; /* px-2 py-1 */
+            font-size: 0.75rem; /* text-xs */
+            position: absolute;
+            z-index: 101; 
+            bottom: 125%; 
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
-<!--
-  Bố cục Sticky Footer bằng Flexbox (h-screen):
-  1. body: h-screen, flex, flex-col -> Chiếm CHÍNH XÁC toàn màn hình.
-  2. div.container: flex-grow, flex, flex-col, overflow-y-auto -> Co giãn lấp đầy VÀ TỰ CUỘN BÊN TRONG.
-  3. main: flex-grow -> Main co giãn lấp đầy container. (SỬA LỖI: Chuyển main về flex-grow)
-  4. footer: flex-shrink-0 -> Footer không bị co lại.
--->
-<body class="bg-gray-900 text-white font-sans antialiased h-screen flex flex-col">
+<body class="h-screen flex flex-col">
 
     <!-- Container chính (Nội dung) -->
-    <!-- SỬA LỖI: Thêm flex-grow, flex-col VÀ overflow-y-auto -->
-    <div class="container mx-auto p-4 max-w-7xl flex-grow flex flex-col overflow-y-auto">
+    <div class="p-4 flex-grow flex flex-col overflow-y-auto">
         
-        <!--
-          Bố cục Flex cho 2 cột chính
-          SỬA LỖI: Thêm flex-grow để main lấp đầy container
-        -->
-        <main class="flex flex-col lg:flex-row gap-6 flex-grow">
+        <main class="flex flex-col lg:flex-row gap-6">
             
-            <!-- Cột bên trái: Màn hình chính & Bảng điều khiển -->
             <div class="lg:w-2/3 flex flex-col gap-5">
-                <!-- Thêm flex-grow và flex flex-col để phần này lấp đầy cột trái -->
-                <div class="bg-gray-800 rounded-lg shadow-2xl p-5 flex-grow flex flex-col">
+                <!-- Bảng Màn hình chính -->
+                <div class="glass-panel p-5 flex-grow flex flex-col">
                     <h2 class="text-2xl font-semibold mb-4 border-b border-gray-700 pb-2">Màn hình chính</h2>
                     
-                    <!-- Màn hình xem lại (Hình ảnh & Canvas) -->
+                    <!-- Màn hình xem lại (CÓ BẢNG ĐIỀU KHIỂN BÊN TRONG) -->
                     <div id="reviewScreen" class="relative w-full aspect-video bg-black rounded-md overflow-hidden">
                         
-                        <!-- Chế độ xem đơn -->
                         <div id="singleView" class="w-full h-full">
-                            <!-- Hình ảnh sự cố (placeholder) -->
                             <img id="mainVideoFeedImage" 
                                  src="https://placehold.co/1920x1080/22c55e/ffffff?text=Sân+cỏ" 
                                  alt="Video feed image" 
-                                 class="w-full h-full object-cover"> <!-- SỬA: object-cover -->
-                                 
-                            <!-- Video (dùng cho WebRTC) -->
+                                 class="w-full h-full object-cover">
                             <video id="mainVideoFeedVideo"
                                    alt="Video feed video"
-                                   class="w-full h-full object-cover hidden" <!-- SỬA: object-cover -->
+                                   class="w-full h-full object-cover hidden"
                                    autoplay muted playsinline></video>
-                            
-                            <!-- Canvas để vẽ vạch -->
                             <canvas id="reviewCanvas" class="absolute top-0 left-0 w-full h-full"></canvas>
-                            <!-- Canvas cho AI Detection -->
                             <canvas id="detectionCanvas" class="absolute top-0 left-0"></canvas>
                         </div>
                         
-                        <!-- Chế độ xem lưới -->
                         <div id="gridView" class="w-full h-full grid grid-cols-2 gap-1 hidden">
                             <!-- Các ô lưới sẽ được thêm bằng JS -->
                         </div>
-                    </div>
 
-                    <!-- Bảng điều khiển -->
-                    <!-- Bảng điều khiển sẽ nằm tự nhiên bên dưới màn hình -->
-                    <div class="mt-4 p-4 bg-gray-700 rounded-lg">
-                        <h3 class="text-xl font-semibold mb-3">Bảng điều khiển</h3>
-                        
-                        <!-- Hàng 1 (GỘP): Điều khiển chính & Công cụ vẽ vạch & AI -->
-                        <div class="flex flex-wrap gap-x-6 gap-y-3 items-center">
-                            <button id="btnGoToIncident" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded-lg transition duration-200" title="Tải ảnh tình huống việt vị">
-                                🎥 Tới Sự cố
-                            </button>
-                            <button id="btnScreenshot" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                                📸 Chụp ảnh
-                            </button>
-
-                            <div class="h-8 border-l border-gray-500 mx-2 hidden md:block"></div>
-
-                            <!-- Công cụ vẽ vạch -->
-                            <div class="flex flex-wrap gap-3 items-center">
-                                <span class="text-lg font-medium hidden sm:inline mr-2">Vẽ vạch:</span>
-                                <button id="btnDrawRedLine" class="bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg transition duration-200" title="Vẽ vạch Đỏ (Tấn công)">TĐ</button>
-                                <button id="btnDrawBlueLine" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg transition duration-200" title="Vẽ vạch Xanh (Hậu vệ)">HV</button>
-                                <button id="btnClearLines" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-3 rounded-lg transition duration-200" title="Xóa vạch">Xóa</button>
-                            </div>
-                            
-                            <div class="h-8 border-l border-gray-500 mx-2 hidden md:block"></div>
-                            
-                            <!-- Nút AI -->
-                            <button id="btnToggleDetection" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                                🤖 Bật Detect
-                            </button>
-                            
-                            <span id="videoStatus" class="text-gray-300 ml-auto">Đã dừng</span>
-                        </div>
-
-                        <!-- Hàng 2 (GỘP): Điều khiển phát lại, Tốc độ & Bố cục -->
-                        <div class="flex flex-wrap gap-x-4 gap-y-3 items-center mt-4 pt-4 border-t border-gray-600">
-                            <!-- Phát lại -->
-                            <button id="btnBack3s" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-lg transition duration-200" title="Lùi 3s">
-                                &laquo; 3s
-                            </button>
-                            <button id="btnTogglePlay" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                                ▶️ Phát
-                            </button>
-                            <button id="btnForward3s" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-lg transition duration-200" title="Tới 3s">
-                                3s &raquo;
-                            </button>
-                            
-                            <div class="h-8 border-l border-gray-500 mx-1"></div>
-
-                            <!-- Frame -->
-                            <button id="btnPrevFrame" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-3 rounded-lg transition duration-200" title="Frame trước">
-                                &lt;|
-                            </button>
-                            <button id="btnNextFrame" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-3 rounded-lg transition duration-200" title="Frame sau">
-                                |&gt;
-                            </button>
-
-                            <div class="h-8 border-l border-gray-500 mx-1"></div>
-
-                            <!-- Tốc độ -->
-                            <div>
-                                <label for="speedSelect" class="text-sm font-medium text-gray-300 sr-only">Tốc độ:</label>
-                                <select id="speedSelect" class="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 py-2 px-3" title="Tốc độ phát">
-                                    <option value="0.25">0.25x</option>
-                                    <option value="0.5">0.5x</option>
-                                    <option value="0.75">0.75x</option>
-                                    <option value="1" selected>1x</option>
-                                    <option value="1.25">1.25x</option>
-                                    <option value="1.5">1.5x</option>
-                                    <option value="1.75">1.75x</option>
-                                    <option value="2">2x</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Bố cục -->
-                            <div class="flex items-center">
-                                <span class="text-sm font-medium text-gray-300 sr-only">Bố cục:</span>
-                                <div class="flex">
-                                    <button id="btnLayoutSingle" class="layout-btn bg-blue-600 text-white py-2 px-3 rounded-l-lg transition duration-200" title="Bố cục Đơn">Đơn</button>
-                                    <button id="btnLayoutGrid" class="layout-btn bg-gray-600 text-white py-2 px-3 rounded-r-lg transition duration-200" title="Bố cục Xếp kề">Xếp kề</button>
+                        <!-- BẢNG ĐIỀU KHIỂN MỚI (Nằm BÊN TRONG, ĐÈ LÊN) -->
+                        <!-- Cụm bên TRÁI -->
+                        <div class="absolute z-10 bottom-2 left-2 p-2 glass-panel rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <button id="btnPrevFrame" class="glass-button text-white font-bold p-2 rounded-lg transition duration-200 tooltip">
+                                    <span class="material-icons-round btn-icon">skip_previous</span>
+                                    <span class="tooltip-text">Frame trước</span>
+                                </button>
+                                <button id="btnBack3s" class="glass-button text-white font-bold p-2 rounded-lg transition duration-200 tooltip">
+                                    <span class="material-icons-round btn-icon">fast_rewind</span>
+                                    <span class="tooltip-text">Lùi 3s</span>
+                                </button>
+                                <button id="btnTogglePlay" class="glass-button text-white font-bold p-2 rounded-lg transition duration-200 tooltip">
+                                    <span id="playPauseIcon" class="material-icons-round btn-icon">play_arrow</span>
+                                    <span id="playPauseTooltip" class="tooltip-text">Phát</span>
+                                </button>
+                                <button id="btnForward3s" class="glass-button text-white font-bold p-2 rounded-lg transition duration-200 tooltip">
+                                    <span class="material-icons-round btn-icon">fast_forward</span>
+                                    <span class="tooltip-text">Tới 3s</span>
+                                </button>
+                                <button id="btnNextFrame" class="glass-button text-white font-bold p-2 rounded-lg transition duration-200 tooltip">
+                                    <span class="material-icons-round btn-icon">skip_next</span>
+                                    <span class="tooltip-text">Frame sau</span>
+                                </button>
+                                <div class="text-sm font-mono ml-2 hidden md:block" title="Thời gian">
+                                    00:00 / 00:00
                                 </div>
-                                <input type="number" id="gridInput" class="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg py-2 px-3 w-20 ml-2 hidden" placeholder="Số ô" value="4">
                             </div>
                         </div>
                         
+                        <!-- Cụm bên PHẢI -->
+                        <div class="absolute z-10 bottom-2 right-2 p-2 glass-panel rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <!-- Nút Bố cục (Mới) -->
+                                <div class="relative tooltip">
+                                    <button id="btnOpenLayoutMenu" class="glass-button text-white font-bold p-2 rounded-lg transition duration-200">
+                                        <span class="material-icons-round btn-icon">view_quilt</span>
+                                    </button>
+                                    <span class="tooltip-text">Bố cục</span>
+                                    <!-- Menu Bố cục -->
+                                    <div id="layoutMenu" class="popup-menu absolute bottom-full right-0 mb-2 w-48 glass-panel rounded-lg shadow-lg p-4">
+                                        <label for="layoutRadioSingle" class="flex items-center gap-2 mb-2 p-2 rounded-lg hover:bg-white/10 cursor-pointer">
+                                            <input type="radio" id="layoutRadioSingle" name="layoutType" value="single" class="text-blue-500 focus:ring-blue-400" checked>
+                                            Đơn
+                                        </label>
+                                        <label for="layoutRadioGrid" class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 cursor-pointer">
+                                            <input type="radio" id="layoutRadioGrid" name="layoutType" value="grid" class="text-blue-500 focus:ring-blue-400">
+                                            Xếp kề
+                                        </label>
+                                        <input type="number" id="gridInput" class="glass-button text-white text-sm rounded-lg py-2 px-3 w-full mt-2 hidden" placeholder="Số ô (ví dụ: 4)" value="4">
+                                    </div>
+                                </div>
+                                
+                                <button id="btnGoToIncident" class="glass-button text-white font-bold p-2 rounded-lg transition duration-200 tooltip">
+                                    <span class="material-icons-round btn-icon">movie</span>
+                                    <span class="tooltip-text">Tới Sự cố</span>
+                                </button>
+                                <button id="btnScreenshot" class="glass-button text-white font-bold p-2 rounded-lg transition duration-200 tooltip">
+                                    <span class="material-icons-round btn-icon">camera_alt</span>
+                                    <span class="tooltip-text">Chụp ảnh</span>
+                                </button>
+                                <button id="btnToggleDetection" class="glass-button text-white font-bold p-2 rounded-lg transition duration-200 tooltip purple">
+                                    <span class="material-icons-round btn-icon">auto_awesome</span>
+                                    <span class="tooltip-text">Bật/Tắt Detect</span>
+                                </button>
+                                
+                                <!-- Nút More (Mới) -->
+                                <div class="relative tooltip">
+                                    <button id="btnOpenMoreMenu" class="glass-button text-white font-bold p-2 rounded-lg transition duration-200">
+                                        <span class="material-icons-round btn-icon">more_vert</span>
+                                    </button>
+                                    <span class="tooltip-text">Thêm</span>
+                                    <!-- Menu More -->
+                                    <div id="moreMenu" class="popup-menu absolute bottom-full right-0 mb-2 w-56 glass-panel rounded-lg shadow-lg overflow-hidden">
+                                        <div id="btnOpenSpeedMenu" class="relative w-full text-left px-4 py-3 hover:bg-white/10 transition cursor-pointer flex items-center gap-2">
+                                            <span class="material-icons-round">speed</span> Tốc độ phát...
+                                        </div>
+                                        <!-- Menu Tốc độ (con) -->
+                                        <div id="speedMenu" class="popup-menu absolute bottom-0 right-full mr-2 w-48 glass-panel rounded-lg shadow-lg p-3">
+                                            <span class="text-sm">Tốc độ</span>
+                                            <div class="grid grid-cols-4 gap-1 mt-2">
+                                                <button class="btn-speed glass-button text-xs p-1 rounded" data-speed="0.25">0.25</button>
+                                                <button class="btn-speed glass-button text-xs p-1 rounded" data-speed="0.5">0.5</button>
+                                                <button class="btn-speed glass-button text-xs p-1 rounded" data-speed="0.75">0.75</button>
+                                                <button class="btn-speed glass-button text-xs p-1 rounded active bg-blue-600" data-speed="1">1x</button>
+                                                <button class="btn-speed glass-button text-xs p-1 rounded" data-speed="1.25">1.25</button>
+                                                <button class="btn-speed glass-button text-xs p-1 rounded" data-speed="1.5">1.5</button>
+                                                <button class="btn-speed glass-button text-xs p-1 rounded" data-speed="1.75">1.75</button>
+                                                <button class="btn-speed glass-button text-xs p-1 rounded" data-speed="2">2x</button>
+                                            </div>
+                                        </div>
+                                        <button class="w-full text-left px-4 py-3 hover:bg-white/10 transition flex items-center gap-2">
+                                            <span class="material-icons-round">high_quality</span> Chất lượng...
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <button id="btnToggleFullscreen" class="glass-button text-white font-bold p-2 rounded-lg transition duration-200 tooltip">
+                                    <span id="iconFullscreen" class="material-icons-round btn-icon">fullscreen</span>
+                                    <span id="iconExitFullscreen" class="material-icons-round btn-icon hidden">fullscreen_exit</span>
+                                    <span class="tooltip-text">Toàn màn hình</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- BẢNG ĐIỀU KHIỂN VẼ VẠCH (Riêng biệt, nằm BÊN DƯỚI) -->
+                    <div class="mt-4 p-4 glass-panel rounded-lg">
+                        <div class="flex items-center gap-2 justify-center">
+                            <span class="text-sm font-medium hidden lg:inline mr-2">Vẽ vạch:</span>
+                            <button id="btnDrawRedLine" class="glass-button text-white py-2 px-3 rounded-lg transition duration-200 tooltip">
+                                TĐ
+                                <span class="tooltip-text">Vạch Tấn công</span>
+                            </button>
+                            <button id="btnDrawBlueLine" class="glass-button text-white py-2 px-3 rounded-lg transition duration-200 tooltip">
+                                HV
+                                <span class="tooltip-text">Vạch Hậu vệ</span>
+                            </button>
+                            <button id="btnClearLines" class="glass-button text-white py-2 px-3 rounded-lg transition duration-200 tooltip">
+                                Xóa
+                                <span class="tooltip-text">Xóa vạch</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -225,11 +361,12 @@
             <div class="lg:w-1/3 flex flex-col gap-6">
                 
                 <!-- Các góc máy quay -->
-                <div class="bg-gray-800 rounded-lg shadow-2xl p-4">
+                <div class="glass-panel p-4">
                     <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
                         <h2 class="text-2xl font-semibold">Góc máy quay</h2>
-                        <button id="btnOpenAddCameraModal" class="bg-blue-600 hover:bg-blue-700 text-white font-bold w-8 h-8 rounded-full flex items-center justify-center transition duration-200" title="Thêm camera mới">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <button id="btnOpenAddCameraModal" class="glass-button text-white font-bold w-8 h-8 rounded-full flex items-center justify-center tooltip">
+                            <span class="material-icons-round btn-icon-sm">add</span>
+                            <span class="tooltip-text">Thêm camera</span>
                         </button>
                     </div>
                     <!-- Thanh cuộn ngang chứa các góc máy -->
@@ -244,12 +381,18 @@
                             <span class="camera-name absolute bottom-1 left-2 text-white text-sm font-bold" style="text-shadow: 1px 1px 2px black;">Main Cam</span>
                             <!-- Nút 3 chấm -->
                             <button class="btn-camera-options absolute top-1 right-1 bg-gray-900 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" title="Tùy chọn">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                                <span class="material-icons-round text-lg">more_vert</span>
                             </button>
                             <!-- Menu tùy chọn -->
-                            <div class="camera-menu absolute top-8 right-1 bg-white text-black rounded-md shadow-lg z-10">
-                                <a href="#" class="btn-rename-camera block px-4 py-2 text-sm hover:bg-gray-200">Đổi tên</a>
-                                <a href="#" class="btn-delete-camera block px-4 py-2 text-sm text-red-600 hover:bg-gray-200">Xóa</a>
+                            <div class="camera-menu absolute top-8 right-1 bg-white text-black rounded-md shadow-lg z-10 overflow-hidden">
+                                <a href="#" class="btn-rename-camera flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-200">
+                                    <span class="material-icons-round menu-icon text-black">drive_file_rename_outline</span>
+                                    Đổi tên
+                                </a>
+                                <a href="#" class="btn-delete-camera flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-200">
+                                    <span class="material-icons-round menu-icon text-red-600">delete</span>
+                                    Xóa
+                                </a>
                             </div>
                         </div>
                         <!-- Camera 2 -->
@@ -261,11 +404,17 @@
                             <video class="camera-angle-video hidden" autoplay muted playsinline></video>
                             <span class="camera-name absolute bottom-1 left-2 text-white text-sm font-bold" style="text-shadow: 1px 1px 2px black;">Góc 16m50</span>
                             <button class="btn-camera-options absolute top-1 right-1 bg-gray-900 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" title="Tùy chọn">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                                <span class="material-icons-round text-lg">more_vert</span>
                             </button>
-                            <div class="camera-menu absolute top-8 right-1 bg-white text-black rounded-md shadow-lg z-10">
-                                <a href="#" class="btn-rename-camera block px-4 py-2 text-sm hover:bg-gray-200">Đổi tên</a>
-                                <a href="#" class="btn-delete-camera block px-4 py-2 text-sm text-red-600 hover:bg-gray-200">Xóa</a>
+                            <div class="camera-menu absolute top-8 right-1 bg-white text-black rounded-md shadow-lg z-10 overflow-hidden">
+                                <a href="#" class="btn-rename-camera flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-200">
+                                    <span class="material-icons-round menu-icon text-black">drive_file_rename_outline</span>
+                                    Đổi tên
+                                </a>
+                                <a href="#" class="btn-delete-camera flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-200">
+                                    <span class="material-icons-round menu-icon text-red-600">delete</span>
+                                    Xóa
+                                </a>
                             </div>
                         </div>
                         <!-- Camera 3 -->
@@ -277,11 +426,17 @@
                             <video class="camera-angle-video hidden" autoplay muted playsinline></video>
                             <span class="camera-name absolute bottom-1 left-2 text-white text-sm font-bold" style="text-shadow: 1px 1px 2px black;">Sau gôn A</span>
                             <button class="btn-camera-options absolute top-1 right-1 bg-gray-900 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" title="Tùy chọn">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                                <span class="material-icons-round text-lg">more_vert</span>
                             </button>
-                            <div class="camera-menu absolute top-8 right-1 bg-white text-black rounded-md shadow-lg z-10">
-                                <a href="#" class="btn-rename-camera block px-4 py-2 text-sm hover:bg-gray-200">Đổi tên</a>
-                                <a href="#" class="btn-delete-camera block px-4 py-2 text-sm text-red-600 hover:bg-gray-200">Xóa</a>
+                            <div class="camera-menu absolute top-8 right-1 bg-white text-black rounded-md shadow-lg z-10 overflow-hidden">
+                                <a href="#" class="btn-rename-camera flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-200">
+                                    <span class="material-icons-round menu-icon text-black">drive_file_rename_outline</span>
+                                    Đổi tên
+                                </a>
+                                <a href="#" class="btn-delete-camera flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-200">
+                                    <span class="material-icons-round menu-icon text-red-600">delete</span>
+                                    Xóa
+                                </a>
                             </div>
                         </div>
                         <!-- Camera 4 -->
@@ -293,38 +448,43 @@
                             <video class="camera-angle-video hidden" autoplay muted playsinline></video>
                             <span class="camera-name absolute bottom-1 left-2 text-white text-sm font-bold" style="text-shadow: 1px 1px 2px black;">Sau gôn B</span>
                             <button class="btn-camera-options absolute top-1 right-1 bg-gray-900 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" title="Tùy chọn">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                                <span class="material-icons-round text-lg">more_vert</span>
                             </button>
-                            <div class="camera-menu absolute top-8 right-1 bg-white text-black rounded-md shadow-lg z-10">
-                                <a href="#" class="btn-rename-camera block px-4 py-2 text-sm hover:bg-gray-200">Đổi tên</a>
-                                <a href="#" class="btn-delete-camera block px-4 py-2 text-sm text-red-600 hover:bg-gray-200">Xóa</a>
+                            <div class="camera-menu absolute top-8 right-1 bg-white text-black rounded-md shadow-lg z-10 overflow-hidden">
+                                <a href="#" class="btn-rename-camera flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-200">
+                                    <span class="material-icons-round menu-icon text-black">drive_file_rename_outline</span>
+                                    Đổi tên
+                                </a>
+                                <a href="#" class="btn-delete-camera flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-200">
+                                    <span class="material-icons-round menu-icon text-red-600">delete</span>
+                                    Xóa
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Quyết định của VAR -->
-                <!-- lg:sticky top-6 đảm bảo nó dính lại khi cuộn trên desktop -->
-                <div class="bg-gray-800 rounded-lg shadow-2xl p-4 lg:sticky top-6">
+                <div class="glass-panel p-4 lg:sticky top-6">
                     <h2 class="text-2xl font-semibold mb-4 border-b border-gray-700 pb-2">Ra quyết định</h2>
                     <div class="space-y-3">
-                        <button class="decision-btn w-full text-lg bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-4 rounded-lg transition duration-200" data-decision="BÀN THẮNG HỢP LỆ">
+                        <button class="decision-btn glass-button success w-full text-lg text-white font-bold py-3 px-4 rounded-lg" data-decision="BÀN THẮNG HỢP LỆ">
                             ✅ Bàn thắng
                         </button>
-                        <button class="decision-btn w-full text-lg bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-4 rounded-lg transition duration-200" data-decision="KHÔNG CÓ BÀN THẮNG (Việt vị)">
+                        <button class="decision-btn glass-button danger w-full text-lg text-white font-bold py-3 px-4 rounded-lg" data-decision="KHÔNG CÓ BÀN THẮNG (Việt vị)">
                             ❌ Không có bàn thắng
                         </button>
-                        <button class="decision-btn w-full text-lg bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200" data-decision="THẺ VÀNG">
+                        <button class="decision-btn glass-button warning w-full text-lg text-white font-bold py-3 px-4 rounded-lg" data-decision="THẺ VÀNG">
                             🟨 Thẻ vàng
                         </button>
-                        <button class="decision-btn w-full text-lg bg-red-800 hover:bg-red-900 text-white font-bold py-3 px-4 rounded-lg transition duration-200" data-decision="THẺ ĐỎ">
+                        <button class="decision-btn glass-button danger w-full text-lg text-white font-bold py-3 px-4 rounded-lg" data-decision="THẺ ĐỎ">
                             🟥 Thẻ đỏ
                         </button>
-                        <button class="decision-btn w-full text-lg bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg transition duration-200" data-decision="PENALTY">
+                        <button class="decision-btn glass-button info w-full text-lg text-white font-bold py-3 px-4 rounded-lg" data-decision="PENALTY">
                             🅿️ Penalty
                         </button>
                     </div>
-                    <div id="finalDecisionBox" class="mt-4 p-4 bg-gray-900 rounded-lg text-center hidden">
+                    <div id="finalDecisionBox" class="mt-4 p-4 bg-gray-900 bg-opacity-50 rounded-lg text-center hidden">
                         <h3 class="text-lg font-bold text-yellow-400">QUYẾT ĐỊNH CUỐI CÙNG</h3>
                         <p id="decisionText" class="text-2xl font-bold mt-2"></p>
                     </div>
@@ -334,24 +494,21 @@
     </div>
 
     <!-- Footer cố định -->
-    <!-- SỬA LỖI: flex-shrink-0 ngăn nó co lại -->
-    <footer class="w-full bg-gray-950 text-gray-400 p-2 border-t border-gray-700 flex-shrink-0">
-        <div class="container mx-auto max-w-7xl px-4 flex justify-between items-center">
-            <!-- Đồng hồ -->
+    <footer class="w-full bg-gray-950 text-gray-400 p-2 border-t border-gray-800 flex-shrink-0">
+        <div class="px-4 flex justify-between items-center">
             <div id="clockDate" class="text-sm font-medium">Đang tải...</div>
-            
-            <!-- Ghép đôi -->
             <div id="pairing-section" class="flex items-center gap-2">
                 <div id="pairing-default-view" class="flex items-center gap-2">
-                    <button id="btnGetPairCode" class="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        LẤY MÃ GHÉP ĐÔI
+                    <button id="btnGetPairCode" class="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition tooltip">
+                        <span class="material-icons-round btn-icon-sm">add_link</span>
+                        <span class="hidden md:inline">LẤY MÃ GHÉP ĐÔI</span>
+                        <span class="tooltip-text">Lấy mã ghép đôi</span>
                     </button>
                 </div>
                 <div id="pairing-code-view" class="hidden items-center gap-3">
                     <span class="text-lg font-bold tracking-widest text-yellow-400" id="pairCodeDisplay"></span>
                     <div class="flex items-center text-gray-500 text-sm">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span class="material-icons-round text-sm mr-1">timer</span>
                         <span id="pairingTimer">05:00</span>
                     </div>
                 </div>
@@ -361,70 +518,65 @@
     
     
     <!-- === CÁC CỬA SỔ POPUP (MODAL) === -->
-
-    <!-- Modal: Đổi tên Camera -->
-    <div id="renameModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+    
+    <div id="renameModal" class="modal fixed inset-0 bg-black bg-opacity-75 items-center justify-center z-50">
+        <div class="glass-panel rounded-lg shadow-xl p-6 w-full max-w-sm">
             <h3 class="text-xl font-semibold mb-4">Đổi tên Camera</h3>
-            <input type="text" id="renameInput" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2" placeholder="Nhập tên mới...">
+            <input type="text" id="renameInput" class="w-full glass-button text-white rounded-lg px-4 py-2" placeholder="Nhập tên mới...">
             <div class="flex justify-end gap-3 mt-4">
-                <button type="button" id="btnCancelRename" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition">Hủy</button>
-                <button type="button" id="btnSaveRename" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">Lưu</button>
+                <button type="button" id="btnCancelRename" class="glass-button text-white font-bold py-2 px-4 rounded-lg transition">Hủy</button>
+                <button type="button" id="btnSaveRename" class="glass-button info text-white font-bold py-2 px-4 rounded-lg transition">Lưu</button>
             </div>
         </div>
     </div>
     
-    <!-- Modal: Xác nhận Xóa Camera -->
-    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+    <div id="deleteModal" class="modal fixed inset-0 bg-black bg-opacity-75 items-center justify-center z-50">
+        <div class="glass-panel rounded-lg shadow-xl p-6 w-full max-w-sm">
             <h3 class="text-xl font-semibold mb-4">Xác nhận Xóa</h3>
             <p class="text-gray-300 mb-6">Bạn có chắc chắn muốn xóa góc máy quay này không?</p>
             <div class="flex justify-end gap-3">
-                <button type="button" id="btnCancelDelete" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition">Hủy</button>
-                <button type="button" id="btnConfirmDelete" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition">OK, Xóa</button>
+                <button type="button" id="btnCancelDelete" class="glass-button text-white font-bold py-2 px-4 rounded-lg transition">Hủy</button>
+                <button type="button" id="btnConfirmDelete" class="glass-button danger text-white font-bold py-2 px-4 rounded-lg transition">OK, Xóa</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Thêm Camera Mới (Thủ công) -->
-    <div id="addCameraModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+    <div id="addCameraModal" class="modal fixed inset-0 bg-black bg-opacity-75 items-center justify-center z-50">
+        <div class="glass-panel rounded-lg shadow-xl p-6 w-full max-w-sm">
             <h3 class="text-xl font-semibold mb-4">Thêm Camera</h3>
-            <input type="text" id="addCameraNameInput" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2" placeholder="Nhập tên camera mới...">
+            <input type="text" id="addCameraNameInput" class="w-full glass-button text-white rounded-lg px-4 py-2" placeholder="Nhập tên camera mới...">
             <div class="flex justify-end gap-3 mt-4">
-                <button type="button" id="btnCancelAddCamera" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition">Hủy</button>
-                <button type="button" id="btnConfirmAddCamera" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">Thêm</button>
+                <button type="button" id="btnCancelAddCamera" class="glass-button text-white font-bold py-2 px-4 rounded-lg transition">Hủy</button>
+                <button type="button" id="btnConfirmAddCamera" class="glass-button info text-white font-bold py-2 px-4 rounded-lg transition">Thêm</button>
             </div>
         </div>
     </div>
     
-    <!-- Modal: Xác nhận Ghép đôi (WebRTC) -->
-    <div id="pairingModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+    <div id="pairingModal" class="modal fixed inset-0 bg-black bg-opacity-75 items-center justify-center z-50">
+        <div class="glass-panel rounded-lg shadow-xl p-6 w-full max-w-sm">
             <h3 class="text-xl font-semibold mb-4">Yêu cầu Ghép đôi</h3>
             <p class="text-gray-300 mb-6">Một thiết bị (ID: <span id="incomingPeerId" class="font-bold">...</span>) đang cố gắng kết nối. Bạn có chấp nhận không?</p>
             <div class="flex justify-end gap-3">
-                <button type="button" id="btnRejectPairing" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition">Không phải</button>
-                <button type="button" id="btnAcceptPairing" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">Phải</button>
+                <button type="button" id="btnRejectPairing" class="glass-button text-white font-bold py-2 px-4 rounded-lg transition">Không phải</button>
+                <button type="button" id="btnAcceptPairing" class="glass-button success text-white font-bold py-2 px-4 rounded-lg transition">Phải</button>
             </div>
         </div>
     </div>
     
-    <!-- Modal: Chọn Vị trí Camera (WebRTC) -->
-    <div id="selectCameraSlotModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+    <div id="selectCameraSlotModal" class="modal fixed inset-0 bg-black bg-opacity-75 items-center justify-center z-50">
+        <div class="glass-panel rounded-lg shadow-xl p-6 w-full max-w-sm">
             <h3 class="text-xl font-semibold mb-4">Chọn Vị trí Camera</h3>
             <p class="text-gray-300 mb-4">Đặt camera mới này vào vị trí nào?</p>
-            <select id="cameraSlotSelect" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2 mb-4">
-                <option value="new">-- Thêm làm camera mới --</option>
-                <!-- Các camera hiện có sẽ được thêm vào đây bằng JS -->
+            <select id="cameraSlotSelect" class="w-full glass-button text-white rounded-lg px-4 py-2 mb-4">
+                <option value="new" class="text-black">-- Thêm làm camera mới --</option>
             </select>
             <div class="flex justify-end gap-3">
-                <button type="button" id="btnCancelSelectSlot" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition">Hủy</button>
-                <button type="button" id="btnConfirmSelectSlot" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">Xác nhận</button>
+                <button type="button" id="btnCancelSelectSlot" class="glass-button text-white font-bold py-2 px-4 rounded-lg transition">Hủy</button>
+                <button type="button" id="btnConfirmSelectSlot" class="glass-button info text-white font-bold py-2 px-4 rounded-lg transition">Xác nhận</button>
             </div>
         </div>
     </div>
+    
     
     <!-- ================================== -->
     <!-- === SCRIPT CHÍNH CỦA ỨNG DỤNG === -->
@@ -448,43 +600,59 @@
 
         // --- CÁC HÀM TIỆN ÍCH ---
         
-        /**
-         * Hàm sleep an toàn
-         */
-        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-        /**
-         * Phát video một cách an toàn, bắt lỗi interrupt
-         */
         async function playVideoSafe(videoElement) {
             if (!videoElement) return;
-            // Thêm 'muted' để đảm bảo autoplay hoạt động
             videoElement.muted = true;
             try {
                 await videoElement.play();
             } catch (error) {
-                if (error.name === 'AbortError' || error.message.includes('interrupted')) {
-                    // Đây là lỗi bình thường khi play() bị ngắt, bỏ qua
-                    // console.log("Video play interrupted, this is normal.");
-                } else {
+                if (error.name !== 'AbortError' && !error.message.includes('interrupted')) {
                     console.error(`Lỗi phát video (${videoElement.id || 'N/A'}):`, error.message);
                 }
             }
         }
         
-        /**
-         * Hiển thị modal
-         */
         function showModal(modalElement) {
-            if (modalElement) modalElement.classList.remove('hidden');
+            if (modalElement) {
+                modalElement.classList.remove('modal:not(.open)');
+                requestAnimationFrame(() => {
+                    modalElement.classList.add('open');
+                });
+            }
         }
 
-        /**
-         * Ẩn modal
-         */
         function hideModal(modalElement) {
-            if (modalElement) modalElement.classList.add('hidden');
+            if (modalElement) {
+                modalElement.classList.remove('open');
+                setTimeout(() => {
+                    modalElement.classList.add('modal:not(.open)');
+                }, 300);
+            }
         }
+
+        function togglePopupMenu(menuElement) {
+            if (!menuElement) return;
+            const isOpen = menuElement.classList.contains('open');
+            hideAllPopups(); // Luôn ẩn tất cả trước
+            if (!isOpen) {
+                menuElement.classList.add('open');
+            }
+        }
+        
+        function hideAllPopups(exceptMenu = null) {
+            document.querySelectorAll('.popup-menu').forEach(menu => {
+                if (menu !== exceptMenu && !menu.contains(exceptMenu)) {
+                    menu.classList.remove('open');
+                }
+            });
+        }
+        
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.relative')) {
+                hideAllPopups();
+            }
+        });
+
 
         // --- HÀM KHỞI TẠO CHÍNH ---
         
@@ -493,22 +661,50 @@
             const mainVideoFeedImage = document.getElementById('mainVideoFeedImage');
             const mainVideoFeedVideo = document.getElementById('mainVideoFeedVideo');
             const cameraAngleContainer = document.getElementById('cameraAngleContainer');
-            const btnGoToIncident = document.getElementById('btnGoToIncident');
-            const btnTogglePlay = document.getElementById('btnTogglePlay');
-            const videoStatus = document.getElementById('videoStatus');
             const decisionButtons = document.querySelectorAll('.decision-btn');
             const finalDecisionBox = document.getElementById('finalDecisionBox');
             const decisionText = document.getElementById('decisionText');
             
-            const canvas = document.getElementById('reviewCanvas');
-            const ctx = canvas.getContext('2d');
+            // DOM Bảng điều khiển MỚI
+            const btnPrevFrame = document.getElementById('btnPrevFrame');
+            const btnBack3s = document.getElementById('btnBack3s');
+            const btnTogglePlay = document.getElementById('btnTogglePlay');
+            const playPauseIcon = document.getElementById('playPauseIcon');
+            const playPauseTooltip = document.getElementById('playPauseTooltip'); // Sửa lỗi tooltip
+            const btnForward3s = document.getElementById('btnForward3s');
+            const btnNextFrame = document.getElementById('btnNextFrame');
+            
             const btnDrawRedLine = document.getElementById('btnDrawRedLine');
             const btnDrawBlueLine = document.getElementById('btnDrawBlueLine');
             const btnClearLines = document.getElementById('btnClearLines');
 
-            const btnLayoutSingle = document.getElementById('btnLayoutSingle');
-            const btnLayoutGrid = document.getElementById('btnLayoutGrid');
+            const btnOpenLayoutMenu = document.getElementById('btnOpenLayoutMenu');
+            const layoutMenu = document.getElementById('layoutMenu');
+            const layoutRadioSingle = document.getElementById('layoutRadioSingle');
+            const layoutRadioGrid = document.getElementById('layoutRadioGrid');
             const gridInput = document.getElementById('gridInput');
+            
+            const btnGoToIncident = document.getElementById('btnGoToIncident');
+            const btnScreenshot = document.getElementById('btnScreenshot');
+            const btnToggleDetection = document.getElementById('btnToggleDetection');
+            
+            const btnOpenMoreMenu = document.getElementById('btnOpenMoreMenu');
+            const moreMenu = document.getElementById('moreMenu');
+            const btnOpenSpeedMenu = document.getElementById('btnOpenSpeedMenu');
+            const speedMenu = document.getElementById('speedMenu');
+            const speedButtons = document.querySelectorAll('.btn-speed');
+            
+            const btnToggleFullscreen = document.getElementById('btnToggleFullscreen');
+            const iconFullscreen = document.getElementById('iconFullscreen');
+            const iconExitFullscreen = document.getElementById('iconExitFullscreen');
+            
+            // DOM Canvas
+            const canvas = document.getElementById('reviewCanvas');
+            const ctx = canvas.getContext('2d');
+            const detectionCanvas = document.getElementById('detectionCanvas');
+            const detCtx = detectionCanvas.getContext('2d');
+            
+            // DOM Chế độ xem
             const singleView = document.getElementById('singleView');
             const gridView = document.getElementById('gridView');
             
@@ -548,10 +744,8 @@
             const btnCancelSelectSlot = document.getElementById('btnCancelSelectSlot');
             const btnConfirmSelectSlot = document.getElementById('btnConfirmSelectSlot');
             
-            // AI Detection
-            const btnToggleDetection = document.getElementById('btnToggleDetection');
-            const detectionCanvas = document.getElementById('detectionCanvas');
-            const detCtx = detectionCanvas.getContext('2d');
+            // Ẩn tất cả modal khi bắt đầu
+            document.querySelectorAll('.modal').forEach(modal => modal.classList.add('modal:not(.open)'));
 
             let isPlaying = false;
             let currentLineColor = 'red';
@@ -578,10 +772,7 @@
             function resizeCanvas(sourceElement) {
                 if (!sourceElement || !canvas) return;
                 
-                // Chờ một frame để DOM cập nhật kích thước
                 requestAnimationFrame(() => {
-                    // Phải lấy 'reviewScreen' làm gốc vì sourceElement (video/img)
-                    // có thể có kích thước 0 tạm thời
                     const reviewScreen = document.getElementById('reviewScreen');
                     if (!reviewScreen) return;
                     
@@ -589,13 +780,11 @@
                     
                     if (rect.width === 0 || rect.height === 0) return;
                     
-                    // Cập nhật canvas vẽ vạch
                     canvas.width = rect.width;
                     canvas.height = rect.height;
                     canvas.style.width = `${rect.width}px`;
                     canvas.style.height = `${rect.height}px`;
                     
-                    // Cập nhật canvas AI
                     detectionCanvas.width = rect.width;
                     detectionCanvas.height = rect.height;
                     detectionCanvas.style.width = `${rect.width}px`;
@@ -609,7 +798,6 @@
             });
             mainVideoFeedImage.onload = () => resizeCanvas(mainVideoFeedImage);
             mainVideoFeedVideo.onloadedmetadata = () => resizeCanvas(mainVideoFeedVideo);
-            // Gọi lần đầu
             resizeCanvas(mainVideoFeedImage);
 
 
@@ -618,9 +806,11 @@
             }
 
             function getMousePos(evt) {
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
+                const reviewRect = document.getElementById('reviewScreen').getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+                
+                const scaleX = canvas.width / canvasRect.width;
+                const scaleY = canvas.height / canvasRect.height;
                 
                 let clientX = evt.clientX;
                 let clientY = evt.clientY;
@@ -631,15 +821,14 @@
                 }
 
                 return {
-                    x: (clientX - rect.left) * scaleX,
-                    y: (clientY - rect.top) * scaleY
+                    x: (clientX - canvasRect.left) * scaleX,
+                    y: (clientY - canvasRect.top) * scaleY
                 };
             }
 
             function startDrawing(e) {
                 e.preventDefault();
                 if (singleView.classList.contains('hidden')) return;
-                
                 isDrawing = true;
                 const pos = getMousePos(e);
                 startX = pos.x;
@@ -649,11 +838,8 @@
             function draw(e) {
                 e.preventDefault();
                 if (!isDrawing || singleView.classList.contains('hidden')) return;
-
-                // Xóa vạch cũ và vẽ vạch mới theo thời gian thực
                 clearLines(); 
                 const pos = getMousePos(e);
-                
                 ctx.beginPath();
                 ctx.strokeStyle = currentLineColor;
                 ctx.lineWidth = 4;
@@ -670,14 +856,16 @@
             }
 
             if (canvas) {
-                canvas.addEventListener('mousedown', startDrawing);
-                canvas.addEventListener('mousemove', draw);
-                canvas.addEventListener('mouseup', stopDrawing);
-                canvas.addEventListener('mouseout', stopDrawing);
-                canvas.addEventListener('touchstart', startDrawing);
-                canvas.addEventListener('touchmove', draw);
-                canvas.addEventListener('touchend', stopDrawing);
-                canvas.addEventListener('touchcancel', stopDrawing);
+                const reviewScreen = document.getElementById('reviewScreen');
+                reviewScreen.addEventListener('mousedown', startDrawing);
+                reviewScreen.addEventListener('touchstart', startDrawing);
+                
+                // SỬA LỖI: Gắn vào window
+                window.addEventListener('mousemove', draw);
+                window.addEventListener('touchmove', draw);
+                window.addEventListener('mouseup', stopDrawing);
+                window.addEventListener('touchend', stopDrawing);
+                window.addEventListener('touchcancel', stopDrawing);
             }
             
             if (btnDrawRedLine) btnDrawRedLine.addEventListener('click', () => currentLineColor = '#ef4444');
@@ -686,33 +874,23 @@
 
             // --- 2. HÀM ĐIỀU KHIỂN CHÍNH ---
 
-            // Chuyển góc máy (khi click thumbnail)
             function setupCameraAngleClick(camElement) {
                 camElement.addEventListener('click', async (e) => {
-                    // Ngăn click vào menu/nút 3 chấm
-                    if (e.target.closest('.btn-camera-options') || e.target.closest('.camera-menu')) {
-                        return;
-                    }
-
-                    // Nếu đang ở chế độ lưới, chuyển về chế độ đơn
-                    if (gridView.classList.contains('hidden') === false) {
-                        if (btnLayoutSingle) btnLayoutSingle.click();
-                    }
+                    if (e.target.closest('.btn-camera-options') || e.target.closest('.camera-menu')) return;
+                    if (layoutRadioGrid.checked) layoutRadioSingle.click(); 
                     
-                    clearLines(); // Xóa vạch khi đổi cam
+                    clearLines(); 
                     
                     const imgSrc = camElement.dataset.src;
-                    const videoStream = camElement.videoStream; // Lấy stream (nếu có)
+                    const videoStream = camElement.videoStream;
 
                     if (videoStream) {
-                        // Đây là camera WebRTC (Video)
                         mainVideoFeedImage.classList.add('hidden');
                         mainVideoFeedVideo.classList.remove('hidden');
                         mainVideoFeedVideo.srcObject = videoStream;
                         await playVideoSafe(mainVideoFeedVideo);
                         resizeCanvas(mainVideoFeedVideo);
                     } else if (imgSrc) {
-                        // Đây là camera ảnh
                         mainVideoFeedImage.classList.remove('hidden');
                         mainVideoFeedVideo.classList.add('hidden');
                         if (mainVideoFeedVideo.srcObject) {
@@ -725,15 +903,11 @@
                 });
             }
             
-            // Gán sự kiện cho các camera ban đầu
             document.querySelectorAll('.camera-angle-wrapper').forEach(setupCameraAngleClick);
 
-            // Tới sự cố
             if (btnGoToIncident) {
                 btnGoToIncident.addEventListener('click', () => {
-                    if (gridView.classList.contains('hidden') === false) {
-                        if (btnLayoutSingle) btnLayoutSingle.click();
-                    }
+                    if (layoutRadioGrid.checked) layoutRadioSingle.click(); 
                     
                     mainVideoFeedImage.classList.remove('hidden');
                     mainVideoFeedVideo.classList.add('hidden');
@@ -743,77 +917,67 @@
                     mainVideoFeedVideo.srcObject = null;
                     mainVideoFeedImage.src = incidentImageSrc;
                     
-                    if (videoStatus) videoStatus.textContent = 'ĐÃ DỪNG (Sự cố)';
-                    if (btnTogglePlay) btnTogglePlay.textContent = '▶️ Phát';
+                    if (playPauseIcon) playPauseIcon.textContent = 'play_arrow';
+                    if (playPauseTooltip) playPauseTooltip.textContent = 'Phát';
                     isPlaying = false;
                     resizeCanvas(mainVideoFeedImage);
                 });
             }
 
-            // Phát/Dừng (Mô phỏng)
             if (btnTogglePlay) {
                 btnTogglePlay.addEventListener('click', async () => {
                     isPlaying = !isPlaying;
                     const currentFeed = mainVideoFeedVideo.classList.contains('hidden') ? null : mainVideoFeedVideo;
-
+                    
                     if (isPlaying) {
-                        if (videoStatus) videoStatus.textContent = 'Đang phát...';
-                        btnTogglePlay.textContent = '⏸️ Dừng';
+                        if (playPauseIcon) playPauseIcon.textContent = 'pause';
+                        if (playPauseTooltip) playPauseTooltip.textContent = 'Dừng';
                         if (currentFeed) await playVideoSafe(currentFeed);
                     } else {
-                        if (videoStatus) videoStatus.textContent = 'Đã dừng';
-                        btnTogglePlay.textContent = '▶️ Phát';
+                        if (playPauseIcon) playPauseIcon.textContent = 'play_arrow';
+                        if (playPauseTooltip) playPauseTooltip.textContent = 'Phát';
                         if (currentFeed) currentFeed.pause();
                     }
                 });
             }
 
-            // Ra quyết định
             decisionButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const decision = btn.dataset.decision;
                     if (decisionText) decisionText.textContent = decision;
                     if (finalDecisionBox) finalDecisionBox.classList.remove('hidden');
-                    decisionButtons.forEach(b => b.classList.remove('active', 'border-yellow-400', 'border-4'));
-                    btn.classList.add('active', 'border-yellow-400', 'border-4');
+                    decisionButtons.forEach(b => b.classList.remove('active', 'border-yellow-400', 'border-2'));
+                    btn.classList.add('active', 'border-yellow-400', 'border-2');
                 });
             });
 
-            // --- 3. HÀM QUẢN LÝ BỐ CỤC (Layout) ---
-
-            if (btnLayoutSingle) {
-                btnLayoutSingle.addEventListener('click', () => {
-                    if (gridInput) gridInput.classList.add('hidden');
-                    if (singleView) singleView.classList.remove('hidden');
-                    if (gridView) gridView.classList.add('hidden');
-                    
-                    btnLayoutSingle.classList.add('active', 'bg-blue-600');
-                    btnLayoutSingle.classList.remove('bg-gray-600');
-                    if (btnLayoutGrid) {
-                        btnLayoutGrid.classList.remove('active', 'bg-blue-600');
-                        btnLayoutGrid.classList.add('bg-gray-600');
-                    }
-                    
-                    // Resize canvas khi quay lại
-                    const currentFeed = mainVideoFeedImage.classList.contains('hidden') ? mainVideoFeedVideo : mainVideoFeedImage;
-                    resizeCanvas(currentFeed);
+            // --- 3. HÀM QUẢN LÝ BỐ CỤC (Layout MỚI) ---
+            
+            if (btnOpenLayoutMenu) {
+                btnOpenLayoutMenu.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    togglePopupMenu(layoutMenu);
                 });
             }
             
-            if (btnLayoutGrid) {
-                btnLayoutGrid.addEventListener('click', () => {
+            if (layoutRadioSingle) {
+                layoutRadioSingle.addEventListener('click', () => {
+                    if (gridInput) gridInput.classList.add('hidden');
+                    if (singleView) singleView.classList.remove('hidden');
+                    if (gridView) gridView.classList.add('hidden');
+                    const currentFeed = mainVideoFeedImage.classList.contains('hidden') ? mainVideoFeedVideo : mainVideoFeedImage;
+                    resizeCanvas(currentFeed);
+                    hideAllPopups();
+                });
+            }
+
+            if (layoutRadioGrid) {
+                layoutRadioGrid.addEventListener('click', () => {
                     if (gridInput) gridInput.classList.remove('hidden');
                     if (singleView) singleView.classList.add('hidden');
                     if (gridView) gridView.classList.remove('hidden');
-
-                    btnLayoutGrid.classList.add('active', 'bg-blue-600');
-                    btnLayoutGrid.classList.remove('bg-gray-600');
-                    if (btnLayoutSingle) {
-                        btnLayoutSingle.classList.remove('active', 'bg-blue-600');
-                        btnLayoutSingle.classList.add('bg-gray-600');
-                    }
-
                     updateGridView();
+                    // Không ẩn popup ngay để người dùng nhập số
                 });
             }
 
@@ -828,30 +992,84 @@
                 const sources = Array.from(document.querySelectorAll('.camera-angle-wrapper'));
                 
                 for (let i = 0; i < count; i++) {
-                    const sourceElement = sources[i % sources.length]; // Lấy nguồn, lặp lại nếu không đủ
+                    const sourceElement = sources[i % sources.length]; 
                     if (!sourceElement) continue;
 
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'aspect-video bg-black rounded-md overflow-hidden'; 
+
                     if (sourceElement.videoStream) {
-                        // Là video stream
                         const videoElement = document.createElement('video');
                         videoElement.srcObject = sourceElement.videoStream;
-                        videoElement.className = 'w-full h-full object-cover bg-black'; // Dùng cover
+                        videoElement.className = 'w-full h-full object-cover';
                         videoElement.autoplay = true;
                         videoElement.muted = true;
                         videoElement.playsinline = true;
-                        gridView.appendChild(videoElement);
+                        wrapper.appendChild(videoElement);
+                        gridView.appendChild(wrapper);
                         playVideoSafe(videoElement);
                     } else if (sourceElement.dataset.src) {
-                        // Là ảnh
                         const imgElement = document.createElement('img');
                         imgElement.src = sourceElement.dataset.src;
                         imgElement.alt = `Camera ${i + 1}`;
-                        imgElement.className = 'w-full h-full object-cover bg-black'; // Dùng cover
-                        gridView.appendChild(imgElement);
+                        imgElement.className = 'w-full h-full object-cover';
+                        wrapper.appendChild(imgElement);
+                        gridView.appendChild(wrapper);
                     }
                 }
             }
             if (gridInput) gridInput.addEventListener('input', updateGridView);
+
+            // --- 3.5. HÀM QUẢN LÝ MENU "MORE" ---
+
+            if (btnOpenMoreMenu) {
+                btnOpenMoreMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    togglePopupMenu(moreMenu);
+                });
+            }
+            
+            if (btnOpenSpeedMenu) {
+                btnOpenSpeedMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Ẩn menu cha
+                    hideAllPopups();
+                    // Mở menu con
+                    togglePopupMenu(speedMenu);
+                });
+            }
+            
+            speedButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    const speed = parseFloat(e.currentTarget.dataset.speed);
+                    speedButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-600'));
+                    e.currentTarget.classList.add('active', 'bg-blue-600');
+                    mainVideoFeedVideo.playbackRate = speed;
+                    hideAllPopups();
+                });
+            });
+            
+            if (btnToggleFullscreen) {
+                btnToggleFullscreen.addEventListener('click', () => {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen();
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        }
+                    }
+                });
+                document.addEventListener('fullscreenchange', () => {
+                    if (!document.fullscreenElement) {
+                        iconFullscreen.classList.remove('hidden');
+                        iconExitFullscreen.classList.add('hidden');
+                    } else {
+                        iconFullscreen.classList.add('hidden');
+                        iconExitFullscreen.classList.remove('hidden');
+                    }
+                });
+            }
 
             // --- 4. HÀM QUẢN LÝ CAMERA (Thêm/Sửa/Xóa) ---
 
@@ -865,7 +1083,7 @@
                 wrapper.className = "camera-angle-wrapper group relative flex-shrink-0 w-40 rounded-md overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-400 transition";
                 
                 const img = document.createElement('img');
-                img.className = "camera-angle camera-angle-image w-full h-full object-cover"; // Dùng cover
+                img.className = "camera-angle camera-angle-image w-full h-full object-cover";
                 img.alt = name;
                 
                 const video = document.createElement('video');
@@ -875,11 +1093,10 @@
                 video.playsinline = true;
 
                 if (stream) {
-                    wrapper.videoStream = stream; // Gán stream
+                    wrapper.videoStream = stream; 
                     video.srcObject = stream;
                     video.classList.remove('hidden');
                     img.classList.add('hidden');
-                    // Không gán data-src cho video stream
                 } else {
                     img.src = imgSrc || placeholderImg;
                     wrapper.dataset.src = imgSrc || placeholderSrc;
@@ -892,19 +1109,23 @@
                     ${video.outerHTML}
                     <span class="camera-name absolute bottom-1 left-2 text-white text-sm font-bold" style="text-shadow: 1px 1px 2px black;">${name}</span>
                     <button class="btn-camera-options absolute top-1 right-1 bg-gray-900 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" title="Tùy chọn">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                        <span class="material-icons-round text-lg">more_vert</span>
                     </button>
-                    <div class="camera-menu absolute top-8 right-1 bg-white text-black rounded-md shadow-lg z-10">
-                        <a href="#" class="btn-rename-camera block px-4 py-2 text-sm hover:bg-gray-200">Đổi tên</a>
-                        <a href="#" class="btn-delete-camera block px-4 py-2 text-sm text-red-600 hover:bg-gray-200">Xóa</a>
+                    <div class="camera-menu absolute top-8 right-1 bg-white text-black rounded-md shadow-lg z-10 overflow-hidden">
+                        <a href="#" class="btn-rename-camera flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-200">
+                            <span class="material-icons-round menu-icon text-black">drive_file_rename_outline</span>
+                            Đổi tên
+                        </a>
+                        <a href="#" class="btn-delete-camera flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-200">
+                            <span class="material-icons-round menu-icon text-red-600">delete</span>
+                            Xóa
+                        </a>
                     </div>
                 `;
                 
-                // Gán lại sự kiện cho camera mới
                 setupCameraAngleClick(wrapper);
                 setupCameraOptionEvents(wrapper);
                 
-                // Phát video thumbnail nếu là stream
                 if (stream) {
                     playVideoSafe(wrapper.querySelector('.camera-angle-video'));
                 }
@@ -920,7 +1141,7 @@
 
                 if (btnOptions) {
                     btnOptions.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Ngăn sự kiện click vào camera
+                        e.stopPropagation(); 
                         if (menu) menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
                     });
                 }
@@ -929,7 +1150,7 @@
                     btnRename.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        activeCameraElement = cameraElement; // Lưu camera đang được sửa
+                        activeCameraElement = cameraElement;
                         if (renameInput) renameInput.value = cameraElement.querySelector('.camera-name').textContent;
                         showModal(renameModal);
                         if (menu) menu.style.display = 'none';
@@ -940,17 +1161,15 @@
                     btnDelete.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        activeCameraElement = cameraElement; // Lưu camera đang được xóa
+                        activeCameraElement = cameraElement;
                         showModal(deleteModal);
                         if (menu) menu.style.display = 'none';
                     });
                 }
             }
             
-            // Gán sự kiện cho các nút Tùy chọn của camera ban đầu
             document.querySelectorAll('.camera-angle-wrapper').forEach(setupCameraOptionEvents);
             
-            // Thêm camera (thủ công)
             if (btnOpenAddCameraModal) btnOpenAddCameraModal.addEventListener('click', () => showModal(addCameraModal));
             if (btnCancelAddCamera) btnCancelAddCamera.addEventListener('click', () => hideModal(addCameraModal));
             if (btnConfirmAddCamera) {
@@ -966,7 +1185,6 @@
                 });
             }
             
-            // Đổi tên camera
             if (btnCancelRename) btnCancelRename.addEventListener('click', () => hideModal(renameModal));
             if (btnSaveRename) {
                 btnSaveRename.addEventListener('click', () => {
@@ -974,19 +1192,13 @@
                     if (newName && activeCameraElement) {
                         const nameSpan = activeCameraElement.querySelector('.camera-name');
                         if (nameSpan) nameSpan.textContent = newName;
-                        
                         const img = activeCameraElement.querySelector('.camera-angle-image');
-                        if (img) {
-                             img.alt = newName;
-                        }
-                        
-                        // Cập nhật data-src nếu là ảnh
+                        if (img) img.alt = newName;
                         if (activeCameraElement.dataset.src) {
                             try {
                                 const oldSrc = new URL(activeCameraElement.dataset.src);
                                 oldSrc.searchParams.set('text', newName);
                                 activeCameraElement.dataset.src = oldSrc.href;
-                                
                                 const thumbImg = activeCameraElement.querySelector('.camera-angle-image');
                                 if (thumbImg) {
                                     const oldThumbSrc = new URL(thumbImg.src);
@@ -1003,12 +1215,10 @@
                 });
             }
 
-            // Xóa camera
             if (btnCancelDelete) btnCancelDelete.addEventListener('click', () => hideModal(deleteModal));
             if (btnConfirmDelete) {
                 btnConfirmDelete.addEventListener('click', () => {
                     if (activeCameraElement) {
-                        // Tắt stream video nếu có
                         if (activeCameraElement.videoStream) {
                             activeCameraElement.videoStream.getTracks().forEach(track => track.stop());
                         }
@@ -1019,30 +1229,17 @@
                 });
             }
 
-
             // --- 5. HÀM QUẢN LÝ PEERJS (WebRTC) ---
             
             function initializePeer(id) {
-                if (peer) {
-                    peer.destroy();
-                }
-                
+                if (peer) peer.destroy();
                 try {
-                    peer = new Peer(id, {
-                        // host: 'localhost', // Bỏ comment nếu dùng server PeerJS tự host
-                        // port: 9000,
-                        // path: '/myapp',
-                        debug: 2
-                    });
+                    peer = new Peer(id, { debug: 2 });
                 } catch (e) {
                     console.error("Không thể khởi tạo PeerJS. PeerJS có được tải không?", e);
                     return;
                 }
-
-                peer.on('open', (id) => {
-                    console.log('PeerJS đã sẵn sàng. ID của tôi là:', id);
-                });
-
+                peer.on('open', (id) => console.log('PeerJS đã sẵn sàng. ID của tôi là:', id));
                 peer.on('error', (err) => {
                     console.error('Lỗi PeerJS:', err);
                     if (err.type === 'peer-unavailable') {
@@ -1050,73 +1247,56 @@
                         resetPairing();
                     }
                 });
-                
-                // Lắng nghe yêu cầu kết nối (DataConnection)
                 peer.on('connection', (conn) => {
                     console.log('Phát hiện kết nối đến:', conn.peer);
                     incomingConnection = conn;
                     if (incomingPeerId) incomingPeerId.textContent = conn.peer;
                     showModal(pairingModal);
                 });
-                
-                // Lắng nghe cuộc gọi (MediaConnection)
                 peer.on('call', (call) => {
                     console.log('Nhận được cuộc gọi video từ:', call.peer);
-                    
-                    // Nếu chưa chấp nhận DataConnection, tạm thời lưu cuộc gọi
                     if (!incomingConnection || incomingConnection.peer !== call.peer) {
                          console.log("Cuộc gọi đến trước khi xác nhận. Lưu lại.");
                          incomingCall = call;
                          if (incomingPeerId) incomingPeerId.textContent = call.peer;
                          showModal(pairingModal);
-                         return; // Chờ xác nhận
+                         return; 
                     }
-                    
-                    // Nếu đã xác nhận, mở modal chọn vị trí
                     openSelectSlotModal(call);
                 });
             }
             
             function openSelectSlotModal(call) {
-                incomingCall = call; // Lưu cuộc gọi
-                
-                // Cập nhật danh sách camera
+                incomingCall = call; 
                 if (cameraSlotSelect) {
-                    cameraSlotSelect.innerHTML = '<option value="new">-- Thêm làm camera mới --</option>';
+                    cameraSlotSelect.innerHTML = '<option value="new" class="text-black">-- Thêm làm camera mới --</option>';
                     document.querySelectorAll('.camera-angle-wrapper').forEach(cam => {
                         const nameSpan = cam.querySelector('.camera-name');
                         if (nameSpan) {
                             const name = nameSpan.textContent;
                             const id = cam.id;
-                            cameraSlotSelect.innerHTML += `<option value="${id}">Thay thế: ${name}</option>`;
+                            cameraSlotSelect.innerHTML += `<option value="${id}" class="text-black">Thay thế: ${name}</option>`;
                         }
                     });
                 }
-                
                 hideModal(pairingModal);
                 showModal(selectCameraSlotModal);
             }
 
             function generatePairCode() {
-                // Tạo mã 6 chữ cái ngẫu nhiên
                 return Math.random().toString(36).substring(2, 8).toUpperCase();
             }
 
             function startPairingTimer() {
-                let timeLeft = 300; // 5 phút
+                let timeLeft = 300; 
                 if (pairingTimer) pairingTimer.textContent = '05:00';
-                
                 if (pairingTimerInterval) clearInterval(pairingTimerInterval);
-
                 pairingTimerInterval = setInterval(() => {
                     timeLeft--;
                     const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
                     const seconds = (timeLeft % 60).toString().padStart(2, '0');
                     if (pairingTimer) pairingTimer.textContent = `${minutes}:${seconds}`;
-
-                    if (timeLeft <= 0) {
-                        resetPairing();
-                    }
+                    if (timeLeft <= 0) resetPairing();
                 }, 1000);
             }
 
@@ -1124,10 +1304,7 @@
                 clearInterval(pairingTimerInterval);
                 if (pairingDefaultView) pairingDefaultView.classList.remove('hidden');
                 if (pairingCodeView) pairingCodeView.classList.add('hidden');
-                if (peer) {
-                    peer.destroy();
-                    peer = null;
-                }
+                if (peer) { peer.destroy(); peer = null; }
                 currentPeerId = null;
             }
 
@@ -1135,16 +1312,13 @@
                 btnGetPairCode.addEventListener('click', () => {
                     currentPeerId = generatePairCode();
                     if (pairCodeDisplay) pairCodeDisplay.textContent = currentPeerId;
-                    
                     if (pairingDefaultView) pairingDefaultView.classList.add('hidden');
                     if (pairingCodeView) pairingCodeView.classList.remove('hidden');
-                    
                     initializePeer(currentPeerId);
                     startPairingTimer();
                 });
             }
 
-            // Xử lý modal Xác nhận ghép đôi
             if (btnRejectPairing) {
                 btnRejectPairing.addEventListener('click', () => {
                     if (incomingConnection) incomingConnection.close();
@@ -1157,22 +1331,12 @@
             
             if (btnAcceptPairing) {
                 btnAcceptPairing.addEventListener('click', () => {
-                    // Gửi tín hiệu chấp nhận (nếu có DataConnection)
-                    if (incomingConnection) {
-                        incomingConnection.send('accepted');
-                    }
-                    
-                    // Nếu cuộc gọi đã đến, mở modal chọn vị trí
-                    if (incomingCall) {
-                        openSelectSlotModal(incomingCall);
-                    }
-                    // Nếu chưa, đợi cuộc gọi đến (đã xử lý ở 'peer.on(call)')
-                    
+                    if (incomingConnection) incomingConnection.send('accepted');
+                    if (incomingCall) openSelectSlotModal(incomingCall);
                     hideModal(pairingModal);
                 });
             }
 
-            // Xử lý modal Chọn Vị trí
             if (btnCancelSelectSlot) {
                 btnCancelSelectSlot.addEventListener('click', () => {
                     if (incomingCall) incomingCall.close();
@@ -1185,50 +1349,32 @@
             if (btnConfirmSelectSlot) {
                 btnConfirmSelectSlot.addEventListener('click', () => {
                     const selectedSlotId = cameraSlotSelect.value;
-                    
                     if (!incomingCall) {
                         console.error("Không tìm thấy cuộc gọi đến!");
                         hideModal(selectCameraSlotModal);
                         return;
                     }
-
-                    // Trả lời cuộc gọi để bắt đầu nhận stream
                     incomingCall.answer(); 
-                    
                     incomingCall.on('stream', (remoteStream) => {
                         console.log("ĐÃ NHẬN STREAM VIDEO!", remoteStream);
                         let newOrUpdatedCam;
-                        
                         if (selectedSlotId === 'new') {
-                            // Thêm làm camera mới
                             const newId = `cam-webrtc-${incomingCall.peer}`;
                             const newName = `Remote Cam (${incomingCall.peer.slice(0, 4)})`;
                             const newCam = createNewCameraElement(newId, newName, null, remoteStream);
                             if (cameraAngleContainer) cameraAngleContainer.appendChild(newCam);
                             newOrUpdatedCam = newCam;
                         } else {
-                            // Thay thế camera hiện có
                             const slotToReplace = document.getElementById(selectedSlotId);
                             if (slotToReplace) {
                                 replaceCameraSlot(slotToReplace, remoteStream);
                                 newOrUpdatedCam = slotToReplace;
                             }
                         }
-                        
-                        // Tự động click vào camera vừa thêm/thay thế
-                        if (newOrUpdatedCam) {
-                            newOrUpdatedCam.click();
-                        }
+                        if (newOrUpdatedCam) newOrUpdatedCam.click();
                     });
-                    
-                    incomingCall.on('close', () => {
-                        console.log("Stream video đã đóng.");
-                    });
-                    
-                    incomingCall.on('error', (err) => {
-                        console.error("Lỗi stream:", err);
-                    });
-                    
+                    incomingCall.on('close', () => console.log("Stream video đã đóng."));
+                    incomingCall.on('error', (err) => console.error("Lỗi stream:", err));
                     hideModal(selectCameraSlotModal);
                     incomingCall = null;
                     incomingConnection = null;
@@ -1238,22 +1384,13 @@
             function replaceCameraSlot(slotElement, stream) {
                 const img = slotElement.querySelector('.camera-angle-image');
                 const video = slotElement.querySelector('.camera-angle-video');
-                
-                // Gán stream
                 slotElement.videoStream = stream;
                 if (video) video.srcObject = stream;
-                
-                // SỬA LỖI QUAN TRỌNG: Xóa data-src (nếu không, khi click nó sẽ tải lại ảnh)
                 slotElement.removeAttribute('data-src');
-
-                // Hiển thị video, ẩn ảnh
                 if (video) video.classList.remove('hidden');
                 if (img) img.classList.add('hidden');
-                
-                // SỬA LỖI: Phát video thumbnail
                 playVideoSafe(video);
             }
-            
             
             // --- 6. HÀM QUẢN LÝ AI (TensorFlow.js) ---
             
@@ -1261,101 +1398,72 @@
                 try {
                     if (!window.tf || !window.blazeface || !window.cocoSsd) {
                         console.error("Thiếu thư viện TensorFlow.js hoặc models.");
-                        if (videoStatus) videoStatus.textContent = 'Lỗi tải AI lib!';
                         return;
                     }
-                
-                    if (videoStatus) videoStatus.textContent = 'Đang tải model AI...';
+                    console.log("Đang tải model AI...");
                     await tf.setBackend('webgl');
-                    
                     const p1 = blazeface.load();
                     const p2 = cocoSsd.load();
-                    
                     [faceModel, objectModel] = await Promise.all([p1, p2]);
-                    
                     console.log("Đã tải xong 2 model AI (BlazeFace & COCO-SSD).");
-                    if (videoStatus) videoStatus.textContent = 'Đã dừng';
                     if (btnToggleDetection) btnToggleDetection.disabled = false;
                 } catch (err) {
                     console.error("Lỗi tải model AI:", err);
-                    if (videoStatus) videoStatus.textContent = 'Lỗi tải AI!';
                 }
             }
             
             async function runDetection() {
                 if (!isDetectionRunning || (!faceModel && !objectModel) || !detCtx) return;
                 
-                // Chọn nguồn video (chỉ chạy trên màn hình chính)
                 const sourceElement = mainVideoFeedVideo.classList.contains('hidden') ? null : mainVideoFeedVideo;
                 
                 if (!sourceElement || sourceElement.paused || sourceElement.ended || sourceElement.readyState < 2) {
-                    // Nếu không có video hoặc video đang dừng, clear canvas và đợi
                     detCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height);
                     return;
                 }
 
-                // Chạy cả 2 model song song
                 const p1 = faceModel ? faceModel.estimateFaces(sourceElement, false) : Promise.resolve([]);
                 const p2 = objectModel ? objectModel.detect(sourceElement) : Promise.resolve([]);
-                
                 const [facePredictions, objectPredictions] = await Promise.all([p1, p2]);
 
-                // Xóa canvas
                 detCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height);
-                detCtx.font = '16px sans-serif';
+                detCtx.font = '16px "Be Vietnam Pro", sans-serif'; 
                 detCtx.textBaseline = 'top';
 
-                // SỬA LỖI: Tính toán tỷ lệ cho 'object-cover'
                 const videoRatio = sourceElement.videoWidth / sourceElement.videoHeight;
                 const canvasRatio = detectionCanvas.width / detectionCanvas.height;
                 let scale = 1, offsetX = 0, offsetY = 0;
 
-                if (videoRatio > canvasRatio) {
-                    // Video rộng hơn canvas -> Video bị cắt trái/phải (pillarbox)
-                    scale = detectionCanvas.height / sourceElement.videoHeight;
-                    offsetX = (detectionCanvas.width - sourceElement.videoWidth * scale) / 2;
-                    offsetY = 0;
-                } else {
-                    // Video cao hơn canvas -> Video bị cắt trên/dưới (letterbox)
-                    scale = detectionCanvas.width / sourceElement.videoWidth;
-                    offsetX = 0;
-                    offsetY = (detectionCanvas.height - sourceElement.videoHeight * scale) / 2;
+                // Tính toán cho object-cover
+                if (videoRatio > canvasRatio) { 
+                     scale = detectionCanvas.height / sourceElement.videoHeight;
+                     offsetX = (detectionCanvas.width - sourceElement.videoWidth * scale) / 2;
+                     offsetY = 0;
+                } else { 
+                     scale = detectionCanvas.width / sourceElement.videoWidth;
+                     offsetX = 0;
+                     offsetY = (detectionCanvas.height - sourceElement.videoHeight * scale) / 2;
                 }
-                
-                // Vẽ các hộp khuôn mặt
+
                 facePredictions.forEach(pred => {
                     const [startX, startY] = pred.topLeft;
                     const [endX, endY] = pred.bottomRight;
-                    const width = endX - startX;
-                    const height = endY - startY;
-                    
-                    const x = startX * scale + offsetX;
-                    const y = startY * scale + offsetY;
-                    const w = width * scale;
-                    const h = height * scale;
-
-                    detCtx.strokeStyle = '#32CD32'; // Xanh lá
+                    const [width, height] = [endX - startX, endY - startY];
+                    const [x, y, w, h] = [startX * scale + offsetX, startY * scale + offsetY, width * scale, height * scale];
+                    detCtx.strokeStyle = '#32CD32'; 
                     detCtx.lineWidth = 2;
                     detCtx.strokeRect(x, y, w, h);
-                    
                     detCtx.fillStyle = '#32CD32';
                     detCtx.fillText('Face', x, y > 18 ? y - 18 : y + h + 4);
                 });
                 
-                // Vẽ các hộp vật thể (chỉ vẽ trái bóng)
                 objectPredictions.forEach(pred => {
                     if (pred.class === 'sports ball') {
                         const [startX, startY, width, height] = pred.bbox;
-                        
-                        const x = startX * scale + offsetX;
-                        const y = startY * scale + offsetY;
-                        const w = width * scale;
-                        const h = height * scale;
-
-                        detCtx.strokeStyle = '#FFD700'; // Vàng
+                        const [x, y, w, h] = [startX * scale + offsetX, startY * scale + offsetY, width * scale, height * scale];
+                        detCtx.strokeStyle = '#FFD700'; 
                         detCtx.lineWidth = 2;
                         detCtx.strokeRect(x, y, w, h);
-                        
                         detCtx.fillStyle = '#FFD700';
                         const label = `Ball (${Math.round(pred.score * 100)}%)`;
                         detCtx.fillText(label, x, y > 18 ? y - 18 : y + h + 4);
@@ -1364,36 +1472,26 @@
             }
 
             if (btnToggleDetection) {
-                btnToggleDetection.disabled = true; // Vô hiệu hóa cho đến khi model tải xong
-                
+                btnToggleDetection.disabled = true; 
                 btnToggleDetection.addEventListener('click', () => {
                     isDetectionRunning = !isDetectionRunning;
-                    
                     if (isDetectionRunning) {
-                        btnToggleDetection.textContent = '🛑 Tắt Detect';
-                        btnToggleDetection.classList.add('bg-red-600', 'hover:bg-red-700');
-                        btnToggleDetection.classList.remove('bg-purple-600', 'hover:bg-purple-700');
-                        
+                        btnToggleDetection.classList.add('danger');
+                        btnToggleDetection.classList.remove('purple');
                         if (detectionInterval) clearInterval(detectionInterval);
-                        detectionInterval = setInterval(runDetection, 100); // Chạy 10 lần/giây
-                        
+                        detectionInterval = setInterval(runDetection, 100); 
                     } else {
-                        btnToggleDetection.textContent = '🤖 Bật Detect';
-                        btnToggleDetection.classList.remove('bg-red-600', 'hover:bg-red-700');
-                        btnToggleDetection.classList.add('bg-purple-600', 'hover:bg-purple-700');
-                        
+                        btnToggleDetection.classList.remove('danger');
+                        btnToggleDetection.classList.add('purple');
                         if (detectionInterval) clearInterval(detectionInterval);
-                        if (detCtx) detCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height); // Xóa lần cuối
+                        if (detCtx) detCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height); 
                     }
                 });
             }
             
-            // Tải model AI sau khi trang đã tải
             loadModels();
         }
 
-        // Chạy hàm main
-        // Thêm kiểm tra lỗi nếu 'Peer' không tồn tại
         if (typeof Peer === 'undefined') {
             alert('Lỗi: Không thể tải thư viện PeerJS. Vui lòng kiểm tra kết nối mạng và thử tải lại trang.');
         } else {
@@ -1403,4 +1501,3 @@
     </script>
 </body>
 </html>
-
